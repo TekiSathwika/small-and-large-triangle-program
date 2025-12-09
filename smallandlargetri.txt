@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+struct triangle
+{
+	int a;
+	int b;
+	int c;
+};
+
+typedef struct triangle triangle;
+
+void sort_by_area(triangle* tr, int n) {
+    // 1. ALLOCATION: Dynamically allocate an array to store the Area Squared (A^2)
+    // Use 'double' for the area squared calculation to handle float results 
+    // when the semi-perimeter 's' is X.5.
+    double *p = (double*)malloc(n * sizeof(double)); 
+
+    // Check for memory allocation failure
+    if (p == NULL) {
+        // In a real-world scenario, you might exit or handle the error gracefully.
+        // For a typical competitive programming environment, we assume allocation succeeds.
+        return; 
+    }
+
+    // 2. CALCULATE A^2 for all triangles
+    for(int i = 0; i < n; i++) {
+        // Calculate semi-perimeter (s) using 2.0 to force double division
+        double s = (tr[i].a + tr[i].b + tr[i].c) / 2.0; 
+        
+        // Calculate Area Squared (A^2 = s(s-a)(s-b)(s-c))
+        double A_squared = s * (s - tr[i].a) * (s - tr[i].b) * (s - tr[i].c);
+        
+        // Store the area squared. Use 0.0 if A_squared is negative (which can happen
+        // if the sides don't form a valid triangle due to floating point precision 
+        // or violation of the triangle inequality, though the problem implies valid input).
+        p[i] = (A_squared > 0) ? A_squared : 0.0;
+    }
+
+    // 3. SORTING: Implement Bubble Sort (could be replaced by qsort for better performance)
+    for(int i = 0; i < n - 1; i++) { 
+        for(int j = 0; j < n - i - 1; j++) {
+            // Comparison based on Area Squared
+            if(p[j] > p[j+1]) { 
+                // Swap Area Squared (p)
+                double temp_area = p[j];
+                p[j] = p[j+1];
+                p[j+1] = temp_area;
+
+                // Swap Triangle Structure (tr) SIMULTANEOUSLY
+                // This keeps the area and the triangle side lengths paired correctly
+                triangle temp_tr = tr[j];
+                tr[j] = tr[j+1];
+                tr[j+1] = temp_tr;
+            }
+        }
+    }
+    
+    // 4. CLEANUP: Free the dynamically allocated memory for the area array
+    free(p);
+}
+int main()
+{
+	int n;
+	scanf("%d", &n);
+	triangle *tr = malloc(n * sizeof(triangle));
+	for (int i = 0; i < n; i++) {
+		scanf("%d%d%d", &tr[i].a, &tr[i].b, &tr[i].c);
+	}
+	sort_by_area(tr, n);
+	for (int i = 0; i < n; i++) {
+		printf("%d %d %d\n", tr[i].a, tr[i].b, tr[i].c);
+	}
+	return 0;
+}
